@@ -4,6 +4,8 @@ TB_DIR ?= tb_sv
 RTL_SRC ?= $(RTL_DIR)/cache.sv
 TB_SRC ?= $(wildcard $(TB_DIR)/*.sv)
 TB_TOP ?= tb_cache
+SNAPSHOT = $(TB_TOP)_snap
+
 SYNTH_VFLAGS := --binary --trace \
                -Wno-DECLFILENAME \
                -Wno-UNUSEDSIGNAL \
@@ -15,12 +17,16 @@ SYNTH_VFLAGS := --binary --trace \
 
 VFLAGS := --binary --trace --coverage -Wno-CONSTRAINTIGN --assert
 
-COVERAGE_TOOL = verilator_coverage
-VERILATOR = verilator
-YOSYS = yosys
-VIVADO = vivado
+COVERAGE_TOOL ?= verilator_coverage
+VERILATOR ?= verilator
+YOSYS ?= yosys
+VIVADO ?= vivado
+XVLOG ?= xvlog
+XELAB ?= xelab
+XSIM ?= xsim
 
-.PHONY: all clean yo-synth v-simulate v-sim_synth v-coverage
+.PHONY: all clean yo-synth v-simulate v-sim_synth v-coverage\
+	xsim-parse xsim-elaborate xsim-sim 
 
 all: v-simulate
 
@@ -47,5 +53,14 @@ v-coverage: v-simulate
 	$(COVERAGE_TOOL) --annotate logs/annotated coverage.dat
 	@echo "Annotated report saved in logs/annotated/"
 
+xsim-parse:
+	$(XVLOG) -sv $(RTL_SRC) $(TB_SRC)
+
+xsim-elaborate: xsim-parse
+	$(XELAB) -debug typical -top $(TB_TOP) -snapshot $(SNAPSHOT)
+
+xsim-sim: xsim-elaborate
+	$(XSIM) $(SNAPSHOT) -R
+
 clean:
-	rm -rf obj_dir *.log *.pb *.jou *.vcd coverage.dat logs/ coverage.info coverage_html/
+	rm -rf $(SNAPSHOT) obj_dir *.log *.pb *.jou *.vcd coverage.dat logs/ coverage.info coverage_html/ *.wdb

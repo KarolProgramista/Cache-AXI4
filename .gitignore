@@ -7,3 +7,17 @@
 *.filelist
 **/logs
 **/**.dat
+xsim.dir/
+.Xil/
+*.log
+*.jou
+*.pb
+*.vcd
+*.wave
+*.fst
+!synth.log
+
+coverage.dat
+coverage.info
+coverage_html/
+logs/

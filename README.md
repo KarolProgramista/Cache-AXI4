@@ -36,16 +36,16 @@ Cache supports only one-cycle memories.
 Reset is synchronous. Sets every internal registers and outputs to 0s. Sets state to IDLE and *ready* to 1.
 
 ## 5. Synthesis
-Module was successfuly synthesised using **Yosys**. Post-synthesis simulation was verified against SV Testbench.
+Module was successfuly synthesised using **Vivado** for **Xilinx/AMD Artix-7**. Post-synthesis simulation was verified against SV Testbench. Resource Utilization Report and Static Timing Analysis Report from Vivado are included in *reports* folder.
 
 ## How to Run
 ```bash
 # Run SystemVerilog Simulation
-make simulate
+make v-simulate
 
 # Run Logic Synthesis (Yosys)
-make synth
+make yo-synth
 
 # Run Post-Synthesis Gate-Level Simulation
-make sim_synth
+make v-sim-synth
 ```
