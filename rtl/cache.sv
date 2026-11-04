@@ -1,32 +1,33 @@
-// Write-back write-allocate 16-bit cache
+// Write-back write-allocate 32-bit cache
 module cache (addr, we, request, cpuDataIn, cpuDataOut, ready, memAddr, memDataIn, memDataOut, memWe, clk, reset);
-    input [15:0] addr;
+    input [32:0] addr;
     input we;
     input request;
-    input [15:0] cpuDataIn;
+    input [32:0] cpuDataIn;
 
-    output reg [15:0] cpuDataOut;
+    output reg [32:0] cpuDataOut;
     output reg ready;
 
-    output reg [15:0] memAddr;
-    input reg [15:0] memDataIn;
-    output reg [15:0] memDataOut;
+    output reg [32:0] memAddr;
+    input reg [32:0] memDataIn;
+    output reg [32:0] memDataOut;
     output reg memWe;
 
     input clk;
     input reset;
 
     reg [1:0] word_counter;
-    reg [15:0] memory_blocks [64];
-    reg [9:0] tags [16];
-    reg valid [16];
-    reg dirty [16];
-    wire [3:0] index;
-    wire [1:0] offset;
-    wire [9:0] tag;
+    reg [32:0] memory_blocks [4096];
+    reg [18:0] tags [1024];
+    reg valid [1024];
+    reg dirty [1024];
+    wire [9:0] index;
+    wire [1:0] word_offset;
+    wire [1:0] byte_offset;
+    wire [17:0] tag;
     wire hit;
-    wire [5:0] memory_address;
-    wire [5:0] counted_memory_address;
+    wire [11:0] memory_address;
+    wire [11:0] counted_memory_address;
 
     localparam IDLE = 2'b00,
         LOOKUP = 2'b01,
@@ -34,21 +35,22 @@ module cache (addr, we, request, cpuDataIn, cpuDataOut, ready, memAddr, memDataI
         REPLACE = 2'b11;
     reg [1:0] state;
 
-    assign tag = addr[15:6];
-    assign index = addr[5:2];
-    assign offset = addr[1:0];
+    assign tag = addr[31:14];
+    assign index = addr[13:4];
+    assign word_offset = addr[3:2];
+    assign byte_offset = addr[1:0];
     assign hit = (valid[index] === 1'b1) && (tags[index] == tag);
-    assign memory_address = (6'(index) << 2)+6'(offset);
-    assign counted_memory_address = (6'(index) << 2) +6'(word_counter);
+    assign memory_address = addr[13:2];
+    assign counted_memory_address = (11'(index) << 2) + 11'(word_counter);
 
     integer i, j;
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            for (i=0; i < 16; i = i+1) begin
+            for (i=0; i < 1024; i = i+1) begin
                 for (j=0; j < 4; j=j+1)
-                    memory_blocks[i*4+j] <= 16'b0;
-                tags[i] <= 10'b0;
+                    memory_blocks[i*4+j] <= 32'b0;
+                tags[i] <= 18'b0;
                 valid[i] <= 1'b0;
                 dirty[i] <= 1'b0;
             end
