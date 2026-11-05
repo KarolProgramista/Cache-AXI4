@@ -1,10 +1,10 @@
 interface cache_if (input logic clk);
-    logic [15:0] addr;
-    logic [15:0] cpuDataIn;
-    logic [15:0] cpuDataOut;
-    logic [15:0] memAddr;
-    logic [15:0] memDataIn;
-    logic [15:0] memDataOut;
+    logic [31:0] addr;
+    logic [31:0] cpuDataIn;
+    logic [31:0] cpuDataOut;
+    logic [31:0] memAddr;
+    logic [31:0] memDataIn;
+    logic [31:0] memDataOut;
     logic we;
     logic memWe;
     logic request;

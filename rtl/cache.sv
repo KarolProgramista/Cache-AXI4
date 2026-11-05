@@ -1,24 +1,25 @@
 // Write-back write-allocate 32-bit cache
 module cache (addr, we, request, cpuDataIn, cpuDataOut, ready, memAddr, memDataIn, memDataOut, memWe, clk, reset);
-    input [32:0] addr;
+    input [31:0] addr;
     input we;
     input request;
-    input [32:0] cpuDataIn;
+    input [31:0] cpuDataIn;
 
-    output reg [32:0] cpuDataOut;
+    output reg [31:0] cpuDataOut;
     output reg ready;
 
-    output reg [32:0] memAddr;
-    input reg [32:0] memDataIn;
-    output reg [32:0] memDataOut;
+    output reg [31:0] memAddr;
+    input reg [31:0] memDataIn;
+    output reg [31:0] memDataOut;
     output reg memWe;
 
     input clk;
     input reset;
-
+    
+    reg [31:0] addr_latch;
     reg [1:0] word_counter;
-    reg [32:0] memory_blocks [4096];
-    reg [18:0] tags [1024];
+    reg [31:0] memory_blocks [4096];
+    reg [17:0] tags [1024];
     reg valid [1024];
     reg dirty [1024];
     wire [9:0] index;
@@ -35,13 +36,13 @@ module cache (addr, we, request, cpuDataIn, cpuDataOut, ready, memAddr, memDataI
         REPLACE = 2'b11;
     reg [1:0] state;
 
-    assign tag = addr[31:14];
-    assign index = addr[13:4];
-    assign word_offset = addr[3:2];
-    assign byte_offset = addr[1:0];
+    assign tag = addr_latch[31:14];
+    assign index = addr_latch[13:4];
+    assign word_offset = addr_latch[3:2];
+    assign byte_offset = addr_latch[1:0];
     assign hit = (valid[index] === 1'b1) && (tags[index] == tag);
-    assign memory_address = addr[13:2];
-    assign counted_memory_address = (11'(index) << 2) + 11'(word_counter);
+    assign memory_address = addr_latch[13:2];
+    assign counted_memory_address = (12'(index) << 2) + 12'(word_counter);
 
     integer i, j;
 
@@ -59,15 +60,17 @@ module cache (addr, we, request, cpuDataIn, cpuDataOut, ready, memAddr, memDataI
             memWe <= 1'b0;
             state <= IDLE;
             ready <= 1'b1;
-            cpuDataOut <= 16'b0;
-            memAddr <= 16'b0;
-            memDataOut <= 16'b0;
+            cpuDataOut <= 32'b0;
+            memAddr <= 32'b0;
+            memDataOut <= 32'b0;
+            addr_latch <= 32'b0;
         end else begin
             case (state)
                 IDLE: begin
                     if (request) begin
                         state <= LOOKUP;
                         ready <= 1'b0;
+                        addr_latch <= addr;
                     end
                 end
                 LOOKUP: begin
@@ -84,20 +87,20 @@ module cache (addr, we, request, cpuDataIn, cpuDataOut, ready, memAddr, memDataI
                     end
                 end
                 FETCH: begin
-                    memAddr <= (addr & 16'b1111111111111100)+16'(word_counter);
+                    memAddr <= ((addr_latch>>2) & (~(32'b11)))+32'(32'(word_counter)<<2);
                     memWe <= 1'b0;
                     state <= REPLACE;
                 end
                 REPLACE: begin
                     memory_blocks[counted_memory_address] <= memDataIn;
 
-                    if (memAddr == addr && we)
+                    if (memAddr == addr_latch && we)
                         memory_blocks[counted_memory_address] <= cpuDataIn;
-                    else if (memAddr == addr)
+                    else if (memAddr == addr_latch)
                         cpuDataOut <= memDataIn;
 
                     if (dirty[index]) begin
-                        memAddr <= 16'(16'(tags[index]) << 6) | 16'(16'(index) << 2) | 16'(word_counter);
+                        memAddr <= 32'(32'(tags[index]) << 12) | (32'(index) << 2) | 32'(word_counter);
                         memWe <= 1'b1;
                         memDataOut <= memory_blocks[counted_memory_address];
                     end

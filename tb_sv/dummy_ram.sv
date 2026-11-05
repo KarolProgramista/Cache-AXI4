@@ -1,12 +1,12 @@
 
 module dummy_ram (cache_if.RAM ram_if);
-    logic [15:0] mem [1023];
+    logic [31:0] mem [1023];
 
     assign ram_if.memDataIn = mem[ram_if.memAddr[9:0]];
 
     initial begin
         foreach (mem[i]) begin
-            mem[i] = 16'h1000 + 16'(i);
+            mem[i] = 32'h1000 + 32'(i);
         end
     end
 

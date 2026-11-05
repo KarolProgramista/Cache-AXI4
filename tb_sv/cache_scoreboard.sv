@@ -4,7 +4,7 @@ typedef class cache_transaction;
 class cache_scoreboard;
     mailbox #(cache_transaction) mon2scb_mbx;
 
-    logic [15:0] ref_mem [logic [15:0]];
+    logic [31:0] ref_mem [logic [31:0]];
 
     int match_count = 0;
     int error_count = 0;
@@ -24,12 +24,12 @@ class cache_scoreboard;
                 $display("[%0t] [SCOREBOARD] WRITE: Addr=0x%0h | Data=0x%0h",
                     $time, tr.addr, tr.dataIn);
             end else begin
-                logic [15:0] exp_data;
+                logic [31:0] exp_data;
 
                 if (ref_mem.exists(tr.addr))
                     exp_data = ref_mem[tr.addr];
                 else
-                    exp_data = 16'h1000+tr.addr;
+                    exp_data = 32'h1000+tr.addr;
 
                 if (tr.dataOut === exp_data) begin
                     $display("[%0t] [SCB PASS]: addr=0x%0h | exp=0x%0h | got=0x%0h",

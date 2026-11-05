@@ -15,7 +15,7 @@ class cache_monitor;
 
         forever begin
             @(posedge vif.clk);
-            if (!ready_prev && vif.ready && !(vif.addr == 16'h0000 && vif.cpuDataOut == 16'h0000)) begin
+            if (!ready_prev && vif.ready && !(vif.addr == 32'h0000 && vif.cpuDataOut == 32'h0000)) begin
 
                 tr = new();
 
