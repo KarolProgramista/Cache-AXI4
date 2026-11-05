@@ -1,5 +1,5 @@
 // Write-back write-allocate 32-bit cache
-module cache (addr, we, request, cpuDataIn, cpuDataOut, ready, memAddr, memDataIn, memDataOut, memWe, clk, reset);
+module cache_ip (addr, we, request, cpuDataIn, cpuDataOut, ready, memAddr, memDataIn, memDataOut, memWe, clk, reset);
     input [31:0] addr;
     input we;
     input request;
