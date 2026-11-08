@@ -4,19 +4,14 @@ typedef class cache_transaction;
 
 module tb_cache;
     logic clk = 0;
+    logic reset = 0;
     always #5 clk = ~clk;
 
-    cache_if cif(clk);
+    cache_ip_if cif(.clk(clk), .reset(reset));
 
-    cache dut (
-        .addr(cif.addr), .cpuDataIn(cif.cpuDataIn), .cpuDataOut(cif.cpuDataOut),
-        .memAddr(cif.memAddr), .memDataIn(cif.memDataIn), .memDataOut(cif.memDataOut),
-        .we(cif.we), .memWe(cif.memWe),
-        .request(cif.request), .ready(cif.ready),
-        .clk(cif.clk), .reset(cif.reset)
-    );
+    cache_ip dut (.cif(cif));
 
-    dummy_ram ram(cif.RAM);
+    dummy_ram ram(dut.cif.WRAPPER);
     
     mailbox #(cache_transaction) gen2drv_mbx = new();
     mailbox #(cache_transaction) mon2scb_mbx = new();
@@ -33,13 +28,13 @@ module tb_cache;
 
     initial begin
         gen = new(gen2drv_mbx);
-        drv = new(cif.TB, gen2drv_mbx);
-        mon = new(cif.TB, mon2scb_mbx);
+        drv = new(cif.WRAPPER, gen2drv_mbx);
+        mon = new(cif.WRAPPER, mon2scb_mbx);
         scb = new(mon2scb_mbx);
 
-        cif.reset = 1;
+        reset = 1;
         #10;
-        cif.reset = 0;
+        reset = 0;
         #10;
 
         fork

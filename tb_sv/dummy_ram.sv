@@ -1,5 +1,5 @@
 
-module dummy_ram (cache_if.RAM ram_if);
+module dummy_ram (cache_ip_if.WRAPPER ram_if);
     logic [31:0] mem [1023];
 
     assign ram_if.memDataIn = mem[ram_if.memAddr[9:0]];

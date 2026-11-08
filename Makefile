@@ -1,7 +1,7 @@
 RTL_DIR ?= rtl
 TB_DIR ?= tb_sv
 
-RTL_SRC ?= $(RTL_DIR)/cache.sv
+RTL_SRC ?= $(RTL_DIR)/axi4_pkg $(filter-out $(RTL_DIR)/axi4_pkg.sv, $(wildcard $(RTL_DIR)/*.sv))
 TB_SRC ?= $(wildcard $(TB_DIR)/*.sv)
 TB_TOP ?= tb_cache
 SNAPSHOT = $(TB_TOP)_snap

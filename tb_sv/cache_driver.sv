@@ -1,11 +1,11 @@
 typedef class cache_transaction;
 
 class cache_driver;
-    virtual cache_if.TB vif;
+    virtual cache_ip_if.WRAPPER vif;
 
     mailbox #(cache_transaction) gen2drv_mbx;
 
-    function new(virtual cache_if.TB vif, mailbox #(cache_transaction) mbx);
+    function new(virtual cache_ip_if.WRAPPER vif, mailbox #(cache_transaction) mbx);
         this.vif = vif;
         this.gen2drv_mbx = mbx;
     endfunction
@@ -15,7 +15,7 @@ class cache_driver;
         
         vif.request   <= 1'b0;
         vif.we        <= 1'b0;
-        vif.addr      <= 32'h0;
+        vif.addr      <= 30'h0;
         vif.cpuDataIn <= 32'h0;
         forever begin
             gen2drv_mbx.get(tr);
