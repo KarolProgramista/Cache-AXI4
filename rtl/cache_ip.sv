@@ -73,9 +73,16 @@ module cache_ip (cache_ip_if.IP cif);
                 REPLACE: begin
                     memory_blocks[counted_memory_address] <= cif.memDataIn;
 
-                    if (cif.memAddr == cif.addr && cif.we)
-                        memory_blocks[counted_memory_address] <= cif.cpuDataIn;
-                    else if (cif.memAddr == cif.addr)
+                    if (cif.memAddr == cif.addr && cif.we) begin
+                        if (cif.strobe[0])
+                            memory_blocks[counted_memory_address][7:0] <= cif.cpuDataIn[7:0];
+                        if (cif.strobe[1])
+                            memory_blocks[counted_memory_address][15:8] <= cif.cpuDataIn[15:8];
+                        if (cif.strobe[2])
+                            memory_blocks[counted_memory_address][23:16] <= cif.cpuDataIn[23:16];
+                        if (cif.strobe[3])
+                            memory_blocks[counted_memory_address][31:24] <= cif.cpuDataIn[31:24];
+                    end else if (cif.memAddr == cif.addr)
                         cif.cpuDataOut <= cif.memDataIn;
 
                     if (dirty[index]) begin

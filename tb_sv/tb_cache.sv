@@ -11,7 +11,7 @@ module tb_cache;
 
     cache_ip dut (.cif(cif));
 
-    dummy_ram ram(dut.cif.WRAPPER);
+    dummy_ram ram(cif.WRAPPER);
     
     mailbox #(cache_transaction) gen2drv_mbx = new();
     mailbox #(cache_transaction) mon2scb_mbx = new();

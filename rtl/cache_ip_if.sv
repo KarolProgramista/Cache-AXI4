@@ -4,7 +4,9 @@ interface cache_ip_if (input logic clk, input logic reset);
     logic request;
     logic [31:0] cpuDataIn;
     logic [31:0] cpuDataOut;
-    reg ready;
+    logic [3:0] strobe;
+    logic ready;
+
 
     logic [29:0] memAddr;
     logic [31:0] memDataIn;
@@ -14,7 +16,7 @@ interface cache_ip_if (input logic clk, input logic reset);
     logic memReadyR;
 
     modport IP (
-        input addr, we, request, cpuDataIn, memDataIn, memReadyW, memReadyR, clk, reset,
+        input addr, we, request, cpuDataIn, strobe, memDataIn, memReadyW, memReadyR, clk, reset,
         output cpuDataOut, ready, memAddr, memDataOut, memWe
     );
 

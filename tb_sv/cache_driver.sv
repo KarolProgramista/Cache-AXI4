@@ -30,6 +30,7 @@ class cache_driver;
         vif.cpuDataIn <= tr.dataIn;
         vif.we <= tr.we;
         vif.request <= tr.request;
+        vif.strobe <= 4'b1111;
 
         do begin
             @(posedge vif.clk);
