@@ -57,14 +57,15 @@ interface axi4_if #(
     // Channel B
     logic [ID_WIDTH-1:0] bid;
     logic [1:0] bresp;
+    logic [USER_WIDTH-1:0] buser;
     logic bvalid;
     logic bready;
 
     modport master (
-        input clk, aresetn,
+        input aclk, aresetn,
             rid, rdata, rresp, rlast, ruser, rvalid,
             bid, bresp, buser, bvalid,
-            arready, awready, awready,
+            arready, awready, wready,
         output arid, araddr, arlen, arsize, arburst,
             arlock, arcache, arprot, arqos, arregion, aruser, arvalid,
             awid, awaddr, awlen, awsize, awburst,
@@ -74,7 +75,7 @@ interface axi4_if #(
     );
 
     modport slave (
-        input clk, aresetn,
+        input aclk, aresetn,
             arid, araddr, arlen, arsize, arburst,
             arlock, arcache, arprot, arqos, arregion, aruser, arvalid,
             awid, awaddr, awlen, awsize, awburst,
@@ -83,11 +84,11 @@ interface axi4_if #(
             rready, bready,
         output rid, rdata, rresp, rlast, ruser, rvalid,
             bid, bresp, buser, bvalid,
-            arready, awready, awready
+            arready, awready, wready
     );
 
     modport monitor (
-        input clk, aresetn,
+        input aclk, aresetn,
             arid, araddr, arlen, arsize, arburst,
             arlock, arcache, arprot, arqos, arregion, aruser, arvalid,
             awid, awaddr, awlen, awsize, awburst,
@@ -95,12 +96,12 @@ interface axi4_if #(
             wid, wdata, wstrb, wlast, wuser, wvalid,
             rid, rdata, rresp, rlast, ruser, rvalid,
             bid, bresp, buser, bvalid,
-            arready, awready, awready, rready, bready
+            arready, awready, wready, rready, bready
     );
 
 
     property reset_valid_p;
-        @(posedge clk) reset |-> (awvalid  === 1'b0 && wvalid === 1'b0 &&
+        @(posedge aclk) !aresetn |-> (awvalid  === 1'b0 && wvalid === 1'b0 &&
                                     arvalid === 1'b0 && bvalid === 1'b0 &&
                                     rvalid === 1'b0);
     endproperty

@@ -4,14 +4,14 @@ typedef class cache_transaction;
 
 module tb_cache;
     logic clk = 0;
-    logic reset = 0;
+    logic reset = 1;
     always #5 clk = ~clk;
 
-    cache_ip_if cif(.clk(clk), .reset(reset));
+    axi4_if cif (.aclk(clk), .aresetn(reset));
 
-    cache_ip dut (.cif(cif));
+    axi4_cache dut (.cpu_if(cif.slave));
 
-    dummy_ram ram(cif.WRAPPER);
+    dummy_ram ram(dut.cif.WRAPPER);
     
     mailbox #(cache_transaction) gen2drv_mbx = new();
     mailbox #(cache_transaction) mon2scb_mbx = new();
@@ -28,13 +28,13 @@ module tb_cache;
 
     initial begin
         gen = new(gen2drv_mbx);
-        drv = new(cif.WRAPPER, gen2drv_mbx);
-        mon = new(cif.WRAPPER, mon2scb_mbx);
+        drv = new(dut.cif.WRAPPER, gen2drv_mbx);
+        mon = new(dut.cif.WRAPPER, mon2scb_mbx);
         scb = new(mon2scb_mbx);
 
-        reset = 1;
-        #10;
         reset = 0;
+        #10;
+        reset = 1;
         #10;
 
         fork
@@ -51,7 +51,7 @@ module tb_cache;
         $display("                   TESTING RANDOM");
         wait(gen2drv_mbx.num() == 0);
         wait(mon2scb_mbx.num() == 0);
-        wait(cif.ready == 1'b1);
+        wait(dut.cif.ready == 1'b1);
         #100;
         $display(" TOTAL MATCHES : %0d", scb.match_count);
         $display(" TOTAL ERRORS  : %0d", scb.error_count);
@@ -68,7 +68,7 @@ module tb_cache;
         $display("                   TESTING READ AFTER WRITE");
         wait(gen2drv_mbx.num() == 0);
         wait(mon2scb_mbx.num() == 0);
-        wait(cif.ready == 1'b1);
+        wait(dut.cif.ready == 1'b1);
         #100;
         $display(" TOTAL MATCHES : %0d", scb.match_count);
         $display(" TOTAL ERRORS  : %0d", scb.error_count);
@@ -85,7 +85,7 @@ module tb_cache;
         $display("                   TESTING READ AFTER WRITE");
         wait(gen2drv_mbx.num() == 0);
         wait(mon2scb_mbx.num() == 0);
-        wait(cif.ready == 1'b1);
+        wait(dut.cif.ready == 1'b1);
         #500;
         $display(" TOTAL MATCHES : %0d", scb.match_count);
         $display(" TOTAL ERRORS  : %0d", scb.error_count);
