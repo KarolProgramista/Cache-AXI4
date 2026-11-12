@@ -18,7 +18,7 @@ module axi4_cache (axi4_if.slave cpu_if);
 
     cache_ip cache(cif);
 
-    assign cif.request = (cpu_if.arvalid || (cpu_if.awvalid && cpu_if.wvalid));// && cif.ready && cpu_if.aresetn;
+    assign cif.request = (cpu_if.arvalid || (cpu_if.awvalid && cpu_if.wvalid)) && cpu_if.aresetn;
 
     assign cpu_if.arready = cpu_if.arvalid && cif.ready;
     assign cpu_if.awready = !cpu_if.arvalid && cpu_if.awvalid && cpu_if.wvalid && cif.ready;
@@ -36,8 +36,8 @@ module axi4_cache (axi4_if.slave cpu_if);
     assign cif.addr = addr;
     assign cif.cpuDataIn = wdata;
     assign cif.we = we;
-    assign cif.memDataIn = 32'b0;// ram_rdata;
-    assign cif.strobe = 4'b0;// cache_strobe;
+    assign cif.memDataIn = ram_rdata;
+    assign cif.strobe = cache_strobe;
 
     // Address latching with read first policy
     always_ff @(posedge cpu_if.aclk) begin
@@ -54,6 +54,7 @@ module axi4_cache (axi4_if.slave cpu_if);
             end
         end else begin
             addr <= 30'b0;
+            ram_rdata <= 32'b0;
             we <= 1'b0;
             read_op <= 1'b0;
         end
