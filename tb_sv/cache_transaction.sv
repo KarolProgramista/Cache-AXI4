@@ -1,5 +1,5 @@
 class cache_transaction;
-    rand logic [29:0] addr;
+    rand logic [31:0] addr;
     rand logic [31:0] dataIn;
     rand logic we;
     rand logic [3:0] strobe;
@@ -10,7 +10,11 @@ class cache_transaction;
     logic [31:0] dataOut;
 
     constraint addr_range_c {
-        addr inside {[30'h0 : 30'h3FF]};
+        addr inside {[32'h0 : 32'h3FF]};
+    }
+
+    constraint addr_word_align_c {
+        addr[1:0] == 2'b00;
     }
 
     constraint op_dist_c {
@@ -24,7 +28,8 @@ class cache_transaction;
 
     // For compatiblity with older versions of verilator
     function void post_randomize();
-        this.addr = this.addr & 30'h03FF;
+        this.addr = this.addr & 32'h03FF;
+        this.addr[1:0] = 2'b00;
         this.request = 1'b1;
         this.strobe = 4'b1111;
         this.we = ((this.dataIn%100) < 30) ? 1'b1 : 1'b0;

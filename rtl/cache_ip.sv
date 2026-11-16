@@ -29,13 +29,10 @@ module cache_ip (cache_ip_if.IP cif);
 
     always_ff @(posedge cif.clk) begin
         if (cif.reset) begin
-            for (i=0; i < 1024; i = i+1) begin
-                for (j=0; j < 4; j=j+1)
-                    memory_blocks[i*4+j] = 32'b0;
-                tags[i] = 18'b0;
-                valid[i] = 1'b0;
-                dirty[i] = 1'b0;
-            end
+            memory_blocks <= '{default: 32'b0};
+            tags <= '{default: 18'b0};
+            valid <= '{default: 1'b0};
+            dirty <= '{default: 1'b0};
 
             word_counter <= 2'b0;
             cif.memWe <= 1'b0;
@@ -47,6 +44,7 @@ module cache_ip (cache_ip_if.IP cif);
         end else begin
             case (state)
                 IDLE: begin
+                    cif.ready <= 1'b1;
                     if (cif.request) begin
                         state <= LOOKUP;
                         cif.ready <= 1'b0;

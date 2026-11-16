@@ -16,7 +16,7 @@ class cache_generator;
             tr = new();
 
             if (!tr.randomize()) begin
-                $fatal("[%0t] [GENERATOR] Randomization failed!", $time);
+                $fatal(1, "[%0t] [GENERATOR] Randomization failed!", $time);
             end
 
             tr.display("GEN-RAN");
@@ -31,7 +31,7 @@ class cache_generator;
             tr_w = new();
 
             if (!tr_w.randomize())
-                $fatal("[%0t] [GENERATOR] Randomization failed!", $time);
+                $fatal(1, "[%0t] [GENERATOR] Randomization failed!", $time);
 
             tr_w.we = 1'b1;
             tr_w.display("GEN-W");
@@ -55,7 +55,7 @@ class cache_generator;
             tr_w = new();
 
             if (!tr_w.randomize())
-                $fatal("[%0t] [GENERATOR] Randomization failed!", $time);
+                $fatal(1, "[%0t] [GENERATOR] Randomization failed!", $time);
 
             tr_w.we = 1'b1;
             tr_w.display("GEN-W");
@@ -63,7 +63,7 @@ class cache_generator;
 
             tr_r_eviction = new();
             if (!tr_r_eviction.randomize())
-                $fatal("[%0t] [GENERATOR] Randomization failed!", $time);
+                $fatal(1, "[%0t] [GENERATOR] Randomization failed!", $time);
 
             tr_r_eviction.we = 1'b0;
             tr_r_eviction.addr[5:0] = tr_w.addr[5:0];

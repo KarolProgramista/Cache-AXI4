@@ -12,7 +12,7 @@ class cache_driver;
 
     task run();
         cache_transaction tr;
-        
+
         vif.araddr <= 32'b0;
         vif.arvalid <= 1'b0;
         vif.awaddr <= 32'b0;
@@ -36,34 +36,26 @@ class cache_driver;
         vif.bready <= 1'b1;
 
         if (tr.we) begin
-            vif.awaddr <= tr.addr << 2;
+            vif.awaddr <= tr.addr;
             vif.awvalid <= 1'b1;
-            do begin
-                @(posedge vif.aclk);
-                #1;
-            end while (!vif.arready);
-            vif.awvalid <= 1'b0;
 
             vif.wdata <= tr.dataIn;
             vif.wstrb <= tr.strobe;
             vif.wvalid <= 1'b1;
             do begin
                 @(posedge vif.aclk);
-                #1;
-            end while (!vif.wready);
+            end while (!vif.wready || !vif.awvalid);
             vif.wvalid <= 1'b0;
+            vif.awvalid <= 1'b0;
         end else begin
-            vif.araddr <= tr.addr << 2;
+            vif.araddr <= tr.addr;
             vif.arvalid <= 1'b1;
             do begin
                 @(posedge vif.aclk);
-                #1;
             end while (!vif.arready);
             vif.arvalid <= 1'b0;
- 
             do begin
                 @(posedge vif.aclk);
-                #1;
             end while (!vif.rvalid);
             vif.rready <= 1'b1;
             @(posedge vif.aclk);

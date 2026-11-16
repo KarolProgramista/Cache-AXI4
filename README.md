@@ -38,7 +38,7 @@ Reset is synchronous. Sets every internal registers and outputs to 0s. Sets stat
 ## 5. Synthesis
 Module was successfuly synthesised using **Vivado** for **Xilinx/AMD Artix-7**. Post-synthesis simulation was verified against SV Testbench. Resource Utilization Report and Static Timing Analysis Report from Vivado are included in *reports* folder.
 
-## How to Run
+## 6. How to Run
 ```bash
 # Run SystemVerilog Simulation
 make v-simulate
@@ -49,3 +49,8 @@ make yo-synth
 # Run Post-Synthesis Gate-Level Simulation
 make v-sim-synth
 ```
+## 7. Minimal Dependencies
+- Verliator >= 5.042 (tested with 5.054)
+- z3
+- g++, make
+For synthesis you would need either ```yosys``` or ```Vivado```. Do not use earlier versions of Verilator, as it has a bug with virtual interfaces causing a convergence crash. 

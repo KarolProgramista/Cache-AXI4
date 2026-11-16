@@ -18,9 +18,9 @@ module axi4_cache (axi4_if.slave cpu_if);
 
     cache_ip cache(cif);
 
-  //  assign cif.request = (cpu_if.arvalid || (cpu_if.awvalid && cpu_if.wvalid)) && cpu_if.aresetn;
+    assign cif.request = (cpu_if.arvalid || (cpu_if.awvalid && cpu_if.wvalid)) && cpu_if.aresetn;
 
-//    assign cpu_if.arready = cpu_if.arvalid;
+    assign cpu_if.arready = cpu_if.arvalid && cif.ready;
     assign cpu_if.awready = !cpu_if.arvalid && cpu_if.awvalid && cpu_if.wvalid && cif.ready;
     assign cpu_if.wready = cpu_if.awready;
     assign cpu_if.rvalid = cif.ready && read_op;
@@ -44,7 +44,7 @@ module axi4_cache (axi4_if.slave cpu_if);
         if (cpu_if.aresetn == 1'b1) begin
             if (cpu_if.arready) begin
                 addr <= 30'(cpu_if.araddr >> 2);
-                read_op <= 1'b0;
+                read_op <= 1'b1;
             end else if (cpu_if.awready) begin
                 addr <= 30'(cpu_if.awaddr >> 2);
                 we <= 1'b1;
@@ -69,8 +69,8 @@ module axi4_cache (axi4_if.slave cpu_if);
     end
     
     // Strobe decoding
-    always_comb  begin
-        cache_strobe = 4'b0000;
+   always_comb  begin
+      cache_strobe = 4'b0000;
         if (cpu_if.wstrb[0] && cpu_if.awaddr % 4 == 0)
             cache_strobe += 4'b0001;
         if (cpu_if.wstrb[1] && cpu_if.awaddr % 4 <= 1)
