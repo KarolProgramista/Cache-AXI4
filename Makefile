@@ -15,7 +15,7 @@ SYNTH_VFLAGS := --binary --trace \
                -Wno-CONSTRAINTIGN \
                -Wno-BLKSEQ \
 
-VFLAGS := --binary --trace --coverage -Wno-CONSTRAINTIGN --assert --debug
+VFLAGS := --binary --trace --coverage -Wno-CONSTRAINTIGN --assert
 
 COVERAGE_TOOL ?= verilator_coverage
 VERILATOR ?= verilator

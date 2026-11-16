@@ -2,6 +2,7 @@ class cache_transaction;
     rand logic [29:0] addr;
     rand logic [31:0] dataIn;
     rand logic we;
+    rand logic [3:0] strobe;
 
     rand logic request;
 
@@ -17,10 +18,15 @@ class cache_transaction;
         request == 1'b1;
     }
 
+    constraint strobe_c {
+        strobe == 4'b1111;
+    }
+
     // For compatiblity with older versions of verilator
     function void post_randomize();
         this.addr = this.addr & 30'h03FF;
         this.request = 1'b1;
+        this.strobe = 4'b1111;
         this.we = ((this.dataIn%100) < 30) ? 1'b1 : 1'b0;
     endfunction
 

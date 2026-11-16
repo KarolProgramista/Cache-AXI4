@@ -28,15 +28,15 @@ module tb_cache;
 
     initial begin
         gen = new(gen2drv_mbx);
-        drv = new(dut.cif.WRAPPER, gen2drv_mbx);
+        drv = new(cif.master, gen2drv_mbx);
         mon = new(dut.cif.WRAPPER, mon2scb_mbx);
         scb = new(mon2scb_mbx);
 
         reset = 0;
         #10;
         reset = 1;
+        $finish;
         #10;
-
 
         fork
             gen.run_random();

@@ -1,11 +1,11 @@
 typedef class cache_transaction;
 
 class cache_driver;
-    virtual cache_ip_if.WRAPPER vif;
+    virtual axi4_if.master vif;
 
     mailbox #(cache_transaction) gen2drv_mbx;
 
-    function new(virtual cache_ip_if.WRAPPER vif, mailbox #(cache_transaction) mbx);
+    function new(virtual axi4_if.master vif, mailbox #(cache_transaction) mbx);
         this.vif = vif;
         this.gen2drv_mbx = mbx;
     endfunction
@@ -13,10 +13,16 @@ class cache_driver;
     task run();
         cache_transaction tr;
         
-        vif.request   <= 1'b0;
-        vif.we        <= 1'b0;
-        vif.addr      <= 30'h0;
-        vif.cpuDataIn <= 32'h0;
+        vif.araddr <= 32'b0;
+        vif.arvalid <= 1'b0;
+        vif.awaddr <= 32'b0;
+        vif.awvalid <= 1'b0;
+        vif.wdata <= 32'b0;
+        vif.wstrb <= 4'b1111;
+        vif.wvalid <= 1'b0;
+        vif.rready <= 1'b0;
+        vif.bready <= 1'b1; // Write response can be ignored
+
         forever begin
             gen2drv_mbx.get(tr);
             drive_transaction(tr);
@@ -24,20 +30,45 @@ class cache_driver;
     endtask
 
     task drive_transaction(cache_transaction tr);
-        @(posedge vif.clk);
+        @(posedge vif.aclk);
         #1;
-        vif.addr <= tr.addr;
-        vif.cpuDataIn <= tr.dataIn;
-        vif.we <= tr.we;
-        vif.request <= tr.request;
-        vif.strobe <= 4'b1111;
+        vif.rready <= 1'b0;
+        vif.bready <= 1'b1;
 
-        do begin
-            @(posedge vif.clk);
-            #1;
-            vif.request <= 1'b0;
-        end while (vif.ready !== 1'b1);
+        if (tr.we) begin
+            vif.awaddr <= tr.addr << 2;
+            vif.awvalid <= 1'b1;
+            do begin
+                @(posedge vif.aclk);
+                #1;
+            end while (!vif.arready);
+            vif.awvalid <= 1'b0;
 
+            vif.wdata <= tr.dataIn;
+            vif.wstrb <= tr.strobe;
+            vif.wvalid <= 1'b1;
+            do begin
+                @(posedge vif.aclk);
+                #1;
+            end while (!vif.wready);
+            vif.wvalid <= 1'b0;
+        end else begin
+            vif.araddr <= tr.addr << 2;
+            vif.arvalid <= 1'b1;
+            do begin
+                @(posedge vif.aclk);
+                #1;
+            end while (!vif.arready);
+            vif.arvalid <= 1'b0;
+ 
+            do begin
+                @(posedge vif.aclk);
+                #1;
+            end while (!vif.rvalid);
+            vif.rready <= 1'b1;
+            @(posedge vif.aclk);
+            vif.rready <= 1'b0;
+        end
     endtask
 
 endclass
