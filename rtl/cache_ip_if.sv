@@ -14,14 +14,15 @@ interface cache_ip_if (input logic clk, input logic reset);
     logic memWe;
     logic memReadyW;
     logic memReadyR;
+    logic memRequest;
 
     modport IP (
         input addr, we, request, cpuDataIn, strobe, memDataIn, memReadyW, memReadyR, clk, reset,
-        output cpuDataOut, ready, memAddr, memDataOut, memWe
+        output cpuDataOut, ready, memAddr, memDataOut, memWe, memRequest
     );
 
     modport WRAPPER (
-        input cpuDataOut, ready, memAddr, memDataOut, memWe,
+        input cpuDataOut, ready, memAddr, memDataOut, memWe, memRequest,
         output addr, we, request, cpuDataIn, memDataIn, memReadyW, memReadyR, clk, reset
     );
 

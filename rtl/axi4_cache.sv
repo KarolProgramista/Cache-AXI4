@@ -36,8 +36,11 @@ module axi4_cache (axi4_if.slave cpu_if);
     assign cif.addr = addr;
     assign cif.cpuDataIn = wdata;
     assign cif.we = we;
-    assign cif.memDataIn = ram_rdata;
     assign cif.strobe = cache_strobe;
+
+    assign cif.memDataIn = ram_rdata;
+    assign cif.memReadyW = 1'b1;
+    assign cif.memReadyR = 1'b1;
 
     // Address latching with read first policy
     always_ff @(posedge cpu_if.aclk) begin

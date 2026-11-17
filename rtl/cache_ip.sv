@@ -64,41 +64,46 @@ module cache_ip (cache_ip_if.IP cif);
                     end
                 end
                 FETCH: begin
-                    cif.memAddr <= (cif.addr & (~(30'b11)))+30'(word_counter);
-                    cif.memWe <= 1'b0;
+                    if (dirty[index]) begin
+                        cif.memAddr <= 30'(30'(tags[index]) << 12) | (30'(index) << 2);
+                        cif.memWe <= 1'b1;
+                        cif.memDataOut <= memory_blocks[counted_memory_address];
+                    end else begin
+                        cif.memAddr <= cif.addr & (~(30'b11));
+                        cif.memWe <= 1'b0;
+                        cif.memRequest <= 1'b1;
+                    end
                     state <= REPLACE;
                 end
                 REPLACE: begin
-                    memory_blocks[counted_memory_address] <= cif.memDataIn;
+                    if (cif.memWe) begin
 
-                    if (cif.memAddr == cif.addr && cif.we) begin
-                        if (cif.strobe[0])
-                            memory_blocks[counted_memory_address][7:0] <= cif.cpuDataIn[7:0];
-                        if (cif.strobe[1])
-                            memory_blocks[counted_memory_address][15:8] <= cif.cpuDataIn[15:8];
-                        if (cif.strobe[2])
-                            memory_blocks[counted_memory_address][23:16] <= cif.cpuDataIn[23:16];
-                        if (cif.strobe[3])
-                            memory_blocks[counted_memory_address][31:24] <= cif.cpuDataIn[31:24];
-                    end else if (cif.memAddr == cif.addr)
-                        cif.cpuDataOut <= cif.memDataIn;
+                    end else if (cif.memReadyR) begin
+                        memory_blocks[counted_memory_address] <= cif.memDataIn;
 
-                    if (dirty[index]) begin
-                        cif.memAddr <= 30'(30'(tags[index]) << 12) | (30'(index) << 2) | 30'(word_counter);
-                        cif.memWe <= 1'b1;
-                        cif.memDataOut <= memory_blocks[counted_memory_address];
-                    end
+                        if (cif.memAddr == cif.addr && cif.we) begin
+                            if (cif.strobe[0])
+                                memory_blocks[counted_memory_address][7:0] <= cif.cpuDataIn[7:0];
+                            if (cif.strobe[1])
+                                memory_blocks[counted_memory_address][15:8] <= cif.cpuDataIn[15:8];
+                            if (cif.strobe[2])
+                                memory_blocks[counted_memory_address][23:16] <= cif.cpuDataIn[23:16];
+                            if (cif.strobe[3])
+                                memory_blocks[counted_memory_address][31:24] <= cif.cpuDataIn[31:24];
+                        end else if (cif.memAddr == cif.addr)
+                            cif.cpuDataOut <= cif.memDataIn;
 
-                    if (word_counter < 2'b11) begin
-                        word_counter <= word_counter+1;
-                        state <= FETCH;
-                    end else begin
-                        word_counter <= 0;
-                        state <= IDLE;
-                        dirty[index] <= cif.we ? 1'b1 : 1'b0;
-                        tags[index] <= tag;
-                        valid[index] <= 1'b1;
-                        cif.ready <= 1'b1;
+                        if (word_counter < 2'b11) begin
+                            word_counter <= word_counter+1;
+                            state <= FETCH;
+                        end else begin
+                            word_counter <= 0;
+                            state <= IDLE;
+                            dirty[index] <= cif.we ? 1'b1 : 1'b0;
+                            tags[index] <= tag;
+                            valid[index] <= 1'b1;
+                            cif.ready <= 1'b1;
+                        end
                     end
                 end
                 default:
