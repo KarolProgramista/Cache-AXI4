@@ -8,8 +8,9 @@ module tb_cache;
     always #5 clk <= ~clk;
 
     axi4_if cif (.aclk(clk), .aresetn(reset));
+    axi4_if ram_if(.aclk(clk), .aresetn(reset));
 
-    axi4_cache dut (.cpu_if(cif.slave));
+    axi4_cache dut (.cpu_if(cif.slave), .ram_if(ram_if.master));
   
     mailbox #(cache_transaction) gen2drv_mbx = new();
     mailbox #(cache_transaction) mon2scb_mbx = new();

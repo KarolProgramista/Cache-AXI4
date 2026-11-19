@@ -1,6 +1,6 @@
 import axi4_pkg::*;
 
-module axi4_cache (axi4_if.slave cpu_if);
+module axi4_cache (axi4_if.slave cpu_if, axi4_if.master ram_if);
 
     logic reset;
     logic gotA;
@@ -14,7 +14,6 @@ module axi4_cache (axi4_if.slave cpu_if);
     logic [31:0] ram_rdata;
 
     cache_ip_if cif(.clk(cpu_if.aclk), .reset(reset));
-    axi4_if ram_if(.aclk(cpu_if.aclk), .aresetn(cpu_if.aresetn));
 
     cache_ip cache(cif);
 
@@ -37,13 +36,25 @@ module axi4_cache (axi4_if.slave cpu_if);
     assign cif.cpuDataIn = wdata;
     assign cif.we = we;
     assign cif.strobe = cache_strobe;
+    
+    assign ram_if.araddr = cif.memAddr;
+    assign ram_if.arlen = 8'h3;
+    assign ram_if.arsize = 3'h4;
+    assign ram_if.arburst = 2'b01;
+    assign ram_if.arvalid = cif.memRequest && !cif.memWe;
 
-    assign cif.memDataIn = ram_rdata;
-    assign cif.memReadyW = 1'b1;
-    assign cif.memReadyR = 1'b1;
+    assign ram_if.rready = ram_if.rvalid && !cif.memWe;
+    assign cif.memReadyR = ram_if.rready;
+    assign cif.memDataIn = ram_if.rdata;
 
-    // Address latching with read first policy
-    always_ff @(posedge cpu_if.aclk) begin
+    always_ff @(posedge cpu_if.aclk or negedge cpu_if.aresetn) begin
+        if (cpu_if.aresetn == 1'b1) begin
+        end else begin
+        end
+    end
+
+    // CPU Address latching with read first policy
+    always_ff @(posedge cpu_if.aclk or negedge cpu_if.aresetn) begin
         if (cpu_if.aresetn == 1'b1) begin
             if (cpu_if.arready) begin
                 addr <= 30'(cpu_if.araddr >> 2);

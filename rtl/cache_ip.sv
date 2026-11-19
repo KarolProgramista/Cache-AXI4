@@ -68,6 +68,7 @@ module cache_ip (cache_ip_if.IP cif);
                         cif.memAddr <= 30'(30'(tags[index]) << 12) | (30'(index) << 2);
                         cif.memWe <= 1'b1;
                         cif.memDataOut <= memory_blocks[counted_memory_address];
+                        cif.memRequest <= 1'b1;
                     end else begin
                         cif.memAddr <= cif.addr & (~(30'b11));
                         cif.memWe <= 1'b0;
@@ -76,7 +77,7 @@ module cache_ip (cache_ip_if.IP cif);
                     state <= REPLACE;
                 end
                 REPLACE: begin
-                    if (cif.memWe) begin
+                    if (cif.memWe && cif.memReadyW) begin
 
                     end else if (cif.memReadyR) begin
                         memory_blocks[counted_memory_address] <= cif.memDataIn;
@@ -95,7 +96,6 @@ module cache_ip (cache_ip_if.IP cif);
 
                         if (word_counter < 2'b11) begin
                             word_counter <= word_counter+1;
-                            state <= FETCH;
                         end else begin
                             word_counter <= 0;
                             state <= IDLE;
