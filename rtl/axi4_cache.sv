@@ -22,8 +22,8 @@ module axi4_cache (axi4_if.slave cpu_if, axi4_if.master ram_if);
     assign cpu_if.arready = cpu_if.arvalid && cif.ready;
     assign cpu_if.awready = !cpu_if.arvalid && cpu_if.awvalid && cpu_if.wvalid && cif.ready;
     assign cpu_if.wready = cpu_if.awready;
-    assign cpu_if.rvalid = cif.ready && read_op;
-    assign cpu_if.bvalid = cif.ready && we;
+    assign cpu_if.rvalid = cpu_if.aresetn ? cif.ready && (read_op || cpu_if.rready) : 1'b0;
+    assign cpu_if.bvalid = cpu_if.aresetn ? cif.ready && we : 1'b0;
 
     assign cpu_if.rresp = AXI_OKAY;
     assign cpu_if.bresp = AXI_OKAY;
@@ -37,15 +37,14 @@ module axi4_cache (axi4_if.slave cpu_if, axi4_if.master ram_if);
     assign cif.we = we;
     assign cif.strobe = cache_strobe;
     
-    assign ram_if.araddr = cif.memAddr;
-    assign ram_if.arlen = 8'h3;
-    assign ram_if.arsize = 3'h4;
-    assign ram_if.arburst = 2'b01;
-    assign ram_if.arvalid = cif.memRequest && !cif.memWe;
+    assign ram_if.araddr = 32'(cif.memAddr << 2);
+    assign ram_if.arvalid = cpu_if.aresetn ? cif.memReadRequest : 1'b0;
 
-    assign ram_if.rready = ram_if.rvalid && !cif.memWe;
+    assign ram_if.rready = ram_if.rvalid && cif.memReadRequest;
     assign cif.memReadyR = ram_if.rready;
     assign cif.memDataIn = ram_if.rdata;
+
+    assign cif.memReadyW = ram_if.wready;
 
     always_ff @(posedge cpu_if.aclk or negedge cpu_if.aresetn) begin
         if (cpu_if.aresetn == 1'b1) begin
@@ -59,9 +58,11 @@ module axi4_cache (axi4_if.slave cpu_if, axi4_if.master ram_if);
             if (cpu_if.arready) begin
                 addr <= 30'(cpu_if.araddr >> 2);
                 read_op <= 1'b1;
+                we <= 1'b0;
             end else if (cpu_if.awready) begin
                 addr <= 30'(cpu_if.awaddr >> 2);
                 we <= 1'b1;
+                read_op <= 1'b0;
             end else if (cif.ready) begin
                 we <= 1'b0;
                 read_op <= 1'b0;

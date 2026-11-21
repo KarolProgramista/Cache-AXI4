@@ -11,18 +11,18 @@ interface cache_ip_if (input logic clk, input logic reset);
     logic [29:0] memAddr;
     logic [31:0] memDataIn;
     logic [31:0] memDataOut;
-    logic memWe;
+    logic memWriteRequest;
+    logic memReadRequest;
     logic memReadyW;
     logic memReadyR;
-    logic memRequest;
 
     modport IP (
         input addr, we, request, cpuDataIn, strobe, memDataIn, memReadyW, memReadyR, clk, reset,
-        output cpuDataOut, ready, memAddr, memDataOut, memWe, memRequest
+        output cpuDataOut, ready, memAddr, memDataOut, memReadRequest, memWriteRequest
     );
 
     modport WRAPPER (
-        input cpuDataOut, ready, memAddr, memDataOut, memWe, memRequest,
+        input cpuDataOut, ready, memAddr, memDataOut, memReadRequest, memWriteRequest,
         output addr, we, request, cpuDataIn, memDataIn, memReadyW, memReadyR, clk, reset
     );
 

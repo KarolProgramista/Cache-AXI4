@@ -11,6 +11,7 @@ module tb_cache;
     axi4_if ram_if(.aclk(clk), .aresetn(reset));
 
     axi4_cache dut (.cpu_if(cif.slave), .ram_if(ram_if.master));
+    dummy_ram ram(ram_if.slave);
   
     mailbox #(cache_transaction) gen2drv_mbx = new();
     mailbox #(cache_transaction) mon2scb_mbx = new();
@@ -83,7 +84,7 @@ module tb_cache;
 
 
         $display("\n=======================================================");
-        $display("                   TESTING READ AFTER WRITE");
+        $display("                   TESTING EVICTION");
         wait(gen2drv_mbx.num() == 0);
         wait(mon2scb_mbx.num() == 0);
         wait(dut.cif.ready == 1'b1);

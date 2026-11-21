@@ -29,7 +29,7 @@ class cache_scoreboard;
                 if (ref_mem.exists(tr.addr))
                     exp_data = ref_mem[tr.addr];
                 else
-                    exp_data = 32'h1000+32'(tr.addr);
+                    exp_data = 32'h1000+32'(tr.addr >> 2);
 
                 if (tr.dataOut === exp_data) begin
                     $display("[%0t] [SCB PASS]: addr=0x%0h | exp=0x%0h | got=0x%0h",
